@@ -12,7 +12,7 @@ terraform {
 # AWSプロバイダー設定
 provider "aws" {
   region = var.aws_region
-  
+
   default_tags {
     tags = {
       service     = var.service

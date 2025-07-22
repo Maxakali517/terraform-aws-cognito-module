@@ -4,7 +4,7 @@ resource "aws_cognito_user_pool" "main" {
 
   # ユーザーネーム設定（email での認証を許可）
   alias_attributes = ["email"]
-  
+
   # 自動検証設定
   auto_verified_attributes = ["email"]
 
@@ -71,12 +71,12 @@ resource "aws_cognito_user_pool_client" "spa_client" {
 
   # OAuth設定
   callback_urls                        = var.callback_urls
-  logout_urls                         = var.logout_urls
-  allowed_oauth_flows                 = var.allowed_oauth_flows
-  allowed_oauth_scopes                = var.allowed_oauth_scopes
+  logout_urls                          = var.logout_urls
+  allowed_oauth_flows                  = var.allowed_oauth_flows
+  allowed_oauth_scopes                 = var.allowed_oauth_scopes
   allowed_oauth_flows_user_pool_client = true
   supported_identity_providers         = ["COGNITO"]
-  
+
   # 認証フロー設定
   explicit_auth_flows = [
     "ALLOW_USER_SRP_AUTH",
@@ -85,13 +85,13 @@ resource "aws_cognito_user_pool_client" "spa_client" {
   ]
 
   # トークン設定
-  access_token_validity  = 24  # 24時間
-  id_token_validity     = 24  # 24時間  
+  access_token_validity  = 24 # 24時間
+  id_token_validity      = 24 # 24時間  
   refresh_token_validity = 30 # 30日
 
   token_validity_units {
     access_token  = "hours"
-    id_token     = "hours"
+    id_token      = "hours"
     refresh_token = "days"
   }
 
