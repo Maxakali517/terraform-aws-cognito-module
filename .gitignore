@@ -36,3 +36,4 @@ terraform.rc
 # Ignore .terraform.lock.hcl if you're not committing it
 # .terraform.lock.hcl
 .terraform.lock.hcl
+memo

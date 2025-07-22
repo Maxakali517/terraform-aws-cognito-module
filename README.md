@@ -29,22 +29,6 @@ sequenceDiagram
 - **ユーザープールドメイン**: Hosted UI用
 - **JWT検証**: FastAPIでのトークン検証
 
-## 📁 ファイル構成
-
-```
-.
-├── README.md           # このファイル
-├── provider.tf         # Terraformプロバイダー設定
-├── variables.tf        # ルートレベル変数定義
-├── outputs.tf          # 出力定義
-├── main.tf            # Cognitoモジュール呼び出し
-└── modules/
-    └── cognito/
-        ├── main.tf     # Cognitoリソース定義
-        ├── variables.tf # モジュール変数定義
-        └── outputs.tf  # モジュール出力定義
-```
-
 ## 🔧 変数説明
 
 ### ルートレベル変数 (`variables.tf`)
@@ -131,66 +115,6 @@ ISSUER="https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_XXXXXXXX
 JWKS_URL="https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_XXXXXXXXX/.well-known/jwks.json"
 ```
 
-## 🚀 使用方法
-
-### 1. 基本的な使用例
-
-```bash
-# Terraformの初期化
-terraform init
-
-# 設定内容の確認
-terraform plan
-
-# リソースの作成
-terraform apply
-```
-
-### 2. カスタム設定での使用例
-
-`terraform.tfvars` ファイルを作成して設定をカスタマイズ：
-
-```hcl
-# terraform.tfvars
-aws_region  = "us-west-2"
-service     = "my-awesome-app"
-environment = "prod"
-
-callback_urls = [
-  "https://app.example.com/auth/callback",
-  "https://staging.example.com/auth/callback"
-]
-
-logout_urls = [
-  "https://app.example.com",
-  "https://staging.example.com"
-]
-```
-
-### 3. 環境変数の取得
-
-```bash
-# フロントエンド用環境変数
-terraform output frontend_env_vars
-
-# バックエンド用環境変数
-terraform output backend_env_vars
-
-# 特定の値のみ取得
-terraform output cognito_user_pool_id
-terraform output cognito_issuer
-```
-
-### 4. Hosted UIでのテスト
-
-```bash
-# 完全なログインURLを取得
-terraform output -raw cognito_hosted_ui_login_url
-
-# このURLをブラウザで開くとCognitoのログインページが表示されます
-# 注意: NextJSアプリがポート3000で起動している必要があります
-```
-
 ## 🔒 セキュリティ考慮事項
 
 ### SPAクライアント設定
@@ -204,22 +128,6 @@ terraform output -raw cognito_hosted_ui_login_url
 - **JWKS使用**: 公開鍵による署名検証
 - **issuer検証**: JWTのissuerクレームを検証
 - **sub取得**: ユーザー識別子（sub）をJWTから取得
-
-## 🏷️ タグと命名規則
-
-### タグ管理
-
-プロバイダーレベルで以下のタグが自動的に全リソースに適用されます：
-
-```hcl
-default_tags {
-  tags = {
-    Service     = var.service
-    Environment = var.environment
-    ManagedBy   = "Terraform"
-  }
-}
-```
 
 ### 命名規則
 
@@ -249,73 +157,5 @@ default_tags {
    - **原因**: Cognitoのschema（ユーザー属性）は作成後変更不可
    - **解決**: `lifecycle { ignore_changes = [schema] }`で回避済み
 
-5. **Hosted UIでエラー表示**
-   ```
-   An error was encountered with the requested page.
-   ```
-   - **原因**: `supported_identity_providers`が未設定
-   - **解決**: `supported_identity_providers = ["COGNITO"]`で修正済み
+   https://github.com/hashicorp/terraform-provider-aws/issues/21654
 
-### ログの確認
-
-```bash
-# Terraformログレベルの設定
-export TF_LOG=DEBUG
-terraform apply
-```
-
-## 📝 開発者向け情報
-
-### NextJS統合例
-
-```typescript
-// cognito.config.ts
-export const cognitoConfig = {
-  region: process.env.NEXT_PUBLIC_AWS_REGION!,
-  userPoolId: process.env.NEXT_PUBLIC_USER_POOL_ID!,
-  clientId: process.env.NEXT_PUBLIC_USER_POOL_CLIENT_ID!,
-  domain: process.env.NEXT_PUBLIC_OAUTH_DOMAIN!,
-};
-```
-
-### FastAPI統合例
-
-```python
-# cognito.py
-import os
-from jose import jwt
-from jose.backends import RSAKey
-import requests
-
-REGION = os.environ["AWS_REGION"]
-USER_POOL_ID = os.environ["USER_POOL_ID"]
-CLIENT_ID = os.environ["CLIENT_ID"]
-ISSUER = os.environ["ISSUER"]
-JWKS_URL = os.environ["JWKS_URL"]
-
-def verify_jwt(token: str) -> dict:
-    """
-    JWT検証を行う
-    - 署名検証（JWKS使用）
-    - issuer検証
-    - audience検証（CLIENT_ID）
-    - 有効期限検証
-    """
-    # JWKS取得
-    response = requests.get(JWKS_URL)
-    jwks = response.json()
-    
-    # JWT検証
-    try:
-        payload = jwt.decode(
-            token,
-            jwks,
-            algorithms=["RS256"],
-            audience=CLIENT_ID,  # audience検証でクライアントIDをチェック
-            issuer=ISSUER,
-            options={"verify_exp": True}
-        )
-        return payload
-    except jwt.JWTError:
-        raise ValueError("Invalid token")
-```
