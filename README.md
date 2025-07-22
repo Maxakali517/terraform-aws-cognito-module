@@ -129,14 +129,6 @@ JWKS_URL="https://cognito-idp.ap-northeast-1.amazonaws.com/ap-northeast-1_XXXXXX
 - **issuer検証**: JWTのissuerクレームを検証
 - **sub取得**: ユーザー識別子（sub）をJWTから取得
 
-### 命名規則
-
-すべてのリソースは`service-environment-`プレフィックスで命名されます：
-
-- **ユーザープール**: `my-app-dev-user-pool`
-- **SPAクライアント**: `my-app-dev-spa-client`
-- **ドメイン**: `my-app-dev-auth`
-
 ## 🔧 トラブルシューティング
 
 ### よくある問題
